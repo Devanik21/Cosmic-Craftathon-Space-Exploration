@@ -10,7 +10,7 @@ SPACESHIP_WIDTH, SPACESHIP_HEIGHT = 30, 40
 ASTEROID_WIDTH, ASTEROID_HEIGHT = 50, 50
 FUEL_WIDTH, FUEL_HEIGHT = 30, 30
 ENEMY_WIDTH, ENEMY_HEIGHT = 50, 50
-BULLET_WIDTH, BULLET_HEIGHT = 5, 10  # Size for enemy bullets
+BULLET_WIDTH, BULLET_HEIGHT = 4, 30  # Size for enemy bullets
 HEART_WIDTH, HEART_HEIGHT = 30, 30  # Heart size
 # Colors
 WHITE = (255, 255, 255)
@@ -166,7 +166,7 @@ class EnemyBullet:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.speed = 10
+        self.speed = 9
 
     def move(self):
         self.y += self.speed
@@ -249,7 +249,7 @@ class HeartLife:
 
     def check_collision(self, spaceship):
         if self.visible and spaceship.x < self.x + HEART_WIDTH and spaceship.x + SPACESHIP_WIDTH > self.x and spaceship.y < self.y + HEART_HEIGHT and spaceship.y + SPACESHIP_HEIGHT > self.y:
-            spaceship.lives += 10  # Add one life
+            spaceship.lives += 20  # Add one life
             pygame.mixer.Sound.play(extra_life_sound)
             self.visible = False  # Hide the heart after collection
 
@@ -262,9 +262,9 @@ class HeartLife:
 # In the main game loop
 def main():
     spaceship = Spaceship()
-    asteroids = [Asteroid() for _ in range(7)]
+    asteroids = [Asteroid() for _ in range(9)]
     fuels = [Fuel() for _ in range(1)]  # Create 3 fuel tanks
-    enemies = [Enemy() for _ in range(5)]
+    enemies = [Enemy() for _ in range(10)]
     enemy_bullets = []
     fast_enemy_added = False  # Track if fast enemy has been added
     heart_life = HeartLife()  # Create heart life instance
@@ -272,7 +272,7 @@ def main():
 
     # Timer variables for fuel tanks
     fuel_spawn_time = pygame.time.get_ticks()  # Track when fuels appear
-    fuel_duration = 5000  # 10 seconds for fuels to stay
+    fuel_duration = 6000  # 10 seconds for fuels to stay
     fuel_respawn_interval = 15000  # 15 seconds to reappear after disappearing
     fuel_visible = True  # Track if fuels are visible
 
@@ -358,6 +358,8 @@ def main():
                     pygame.mixer.Sound.play(powerup_sound)  # Play powerup sound
                     fuels.remove(fuel)  # Remove fuel that was collected
 
+                    
+                    
         for enemy in enemies:
             enemy.move()
             enemy.draw()
@@ -372,10 +374,13 @@ def main():
             if bullet.is_off_screen():
                 enemy_bullets.remove(bullet)
             # Collision detection with spaceship
-            elif spaceship.x < bullet.x + BULLET_WIDTH and spaceship.x + SPACESHIP_WIDTH > bullet.x and spaceship.y < bullet.y + BULLET_HEIGHT and spaceship.y + SPACESHIP_HEIGHT > bullet.y:
+            if spaceship.x < bullet.x + BULLET_WIDTH and spaceship.x + SPACESHIP_WIDTH > bullet.x and spaceship.y < bullet.y + BULLET_HEIGHT and spaceship.y + SPACESHIP_HEIGHT > bullet.y:
                 spaceship.lives -= 10
                 enemy_bullets.remove(bullet)
-        
+            if spaceship.lives <= 0:
+                print("Game Over! No lives remaining.")
+                running = False  # End the game loop    
+          
         for bullet in spaceship.bullets[:]:  # Use a copy to avoid modification during iteration
             bullet.move()
             bullet.draw()
